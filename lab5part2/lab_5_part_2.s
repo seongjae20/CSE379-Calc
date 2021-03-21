@@ -15,7 +15,7 @@ DATA: .equ 0x3FC
 DIGI: .equ 0x51C
 PULL: .equ 0x510
 GPIOIS: .equ 0x404
-GPIOIBE: .equ 0x40
+GPIOIBE: .equ 0x408
 GPIOIV: .equ 0x40C
 GPIOIM: .equ 0x410
 ptr_to_check:	.word check
@@ -51,8 +51,9 @@ interrupt_init:
 
 	mov r2, #0x10
 	strb r2, [r1, #UARTIM]
-	mov r2, #0x4020
-	strb r2, [r3, #EN0]
+	mov r2, #0x0020
+	movt r2, #0x4000
+	str r2, [r3, #EN0]
 
 	mov r4, #0x5000
 	movt r4, #0x4002
