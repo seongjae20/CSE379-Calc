@@ -40,9 +40,9 @@ lab5:
 
 	bl gpio_init
 
- 	bl interrupt_init
+	bl timer_init
 
- 	bl timer_init
+ 	bl interrupt_init
 
 loop:
 	ldr r1, ptr_to_check
@@ -53,45 +53,121 @@ loop:
  	LDMFD sp!, {r0-r12,lr}
  	MOV pc, lr
 
+gpio_init:
+	STMFD SP!,{lr, r1-r11}
+
+	; GPIO Base Address
+	mov r3, #0xE000
+    movt r3, #0x400F
+
+    ; enable Port F
+    ldr r4, [r3, #CLOCK]
+    ORR r4, r4, #0xFFFFFFFF
+    ORR r4, r4, #0x20
+    strb r4, [r3, #CLOCK]
+
+    ; Port F Address
+    mov r1, #0x5000
+    movt r1, #0x4002
+
+    ; enable pin 4
+    ldr r4, [r1, #DIGI]
+    ORR r4, r4, #0x10
+    strb r4, [r1, #DIGI]
+
+    ; pull-up pin 4
+    ldr r4, [r1, #PULL]
+    ORR r4, r4, #0x10
+    strb r4, [r1, #PULL]
+
+    ; set pin 4 in as input
+    ldrb r4, [r1, #DIR]
+    AND r4, r4, #0xEF
+    strb r4, [r1, #DIR]
+
+    LDMFD sp!, {lr, r1-r11}
+	MOV pc, lr
+
 interrupt_init:
  	STMFD SP!,{r0-r12,lr} ; Store register lr on stack
 
  	; Your code is placed here
 
- 	; address of UART
- 	mov r1, #0xC000
-	movt r1, #0x4000
-
 	; addrees of EN0
 	mov r3, #0xE000
 	movt r3, #0xE000
 
+	;; UART
 	; Enable interrupt
-	mov r2, #0x10
-	strb r2, [r1, #UARTIM]
-	mov r2, #0x0020
-	movt r2, #0x4008
+	ldr r2, [r3, #EN0]
+	ORR r2, r2, #0x20
+	str r2, [r3, #EN0]
+
+	; address of UART
+ 	mov r1, #0xC000
+	movt r1, #0x4000
+
+	; Enable interrupt
+	ldr r2, [r1, #UARTIM]
+	ORR r2, r2, #0x10
+	str r2, [r1, #UARTIM]
+
+	;; Switch
+	; enable switch
+	ldr r2, [r3, #EN0]
+	ORR r2, r2, #0x40000000
 	str r2, [r3, #EN0]
 
 	; switch init
 	mov r4, #0x5000
 	movt r4, #0x4002
 
-	mov r5, #0x10
-	strb r5, [r4, #GPIOIS]
-	strb r5, [r4, #GPIOIBE]
-	strb r5, [r4, #GPIOIV]
-	strb r5, [r4, #GPIOIM]
+	; configuring level sensitive
+	ldr r2, [r4, #GPIOIS]
+	ORR r2, r5, #0x10
+	str r2, [r4, #GPIOIS]
+
+	; Allow GPIO interrupt event
+	ldr r2, [r4, #GPIOIBE]
+	ORR r2, r5, #0x10
+	str r2, [r4, #GPIOIBE]
+
+	; set to high trigger
+	ldr r2, [r4, #GPIOIV]
+	ORR r2, r5, #0x10
+	str r2, [r4, #GPIOIV]
+
+	; allow interrupt to be triggered
+	ldr r2, [r4, #GPIOIM]
+	ORR r2, r5, #0x10
+	str r2, [r4, #GPIOIM]
+
+	;; Timer
+	; enable timer
+	ldr r2, [r3, #EN0]
+	ORR r2, r2, #0x80000
+	str r2, [r3, #EN0]
+
+	; base address of timer
+	mov r5, #0x0000
+	movt r5, #0x4003
+
+	; Configure Interval
+	ldr r2, [r5, #GPTMTAILR]
+	ORR r2, r2, #0xFFFFFFFF
+	str r2, [r5, #GPTMTAILR]
+
 
 	; set timer interrupt
-	mov r1, #0x0000
-	movt r1, #0x4003
-	ldr r6, [r1, #GPTMIMR]
-	mov r0, #1
-	ORR r0, r0, r6
-	str r0, [r1, #GPTMIMR]
+	ldr r2, [r5, #GPTMIMR]
+	ORR r2, r2, #0x1
+	str r2, [r5, #GPTMIMR]
 
-	mov r0, #0
+	; Disable timer
+	ldr r2, [r5, #GPTMCTL]
+	AND r2, r2, #0x0
+	str r2, [r5, #GPTMCTL]
+
 
  	LDMFD sp!, {r0-r12,lr}
 	MOV pc, lr
@@ -101,32 +177,33 @@ timer_init:
 
 	; Your code is placed here
 
- 	; Enable Timer Clock
+	; Base address timer Clock
+	mov r4, #0xE000
+	movt r4, #0x400F
+
+	; Enable Timer Clock
+ 	ldr r2, [r4, #RCGCTIMER]
+	ORR r2, r2, #0x1
+	str r2, [r4, #RCGCTIMER]
+
+	; base address of timer
 	mov r1, #0x0000
 	movt r1, #0x4003
-	mov r0, #1
-	strb r0, [r1, #RCGCTIMER]
 
-	; Disable timer
-	AND r0, r0, #0
-	str r0, [r1, #GPTMCTL]
+	; Enable Timer
+	ldr r2, [r1, #GPTMCTL]
+	ORR r2, r2, #0x1
+	str r2, [r1, #GPTMCTL]
 
 	; 32-bit
-	mov r0, #0
+	ldr r2, [r1, #GPTMCFG]
+	AND r2, r2, #0x0
 	str r0, [r1, #GPTMCFG]
 
 	; Set to Periodic Mode
-	mov r0, #0x2
-	str r0, [r1, #GPTMTAMR]
-
-	; Configure Interval
-	mov r0, #0xFFFF
-	movt r0, #0xFFFF
-	str r0, [r1, #GPTMTAILR]
-
-	; Enable Timer
-	mov r0, #1
-	str r0, [r1, #GPTMCTL]
+	ldr r2, [r1, #GPTMTAMR]
+	ORR r2, r2, #0x2
+	str r2, [r1, #GPTMTAMR]
 
 	LDMFD sp!, {r0-r12,lr}
 	MOV pc, lr
@@ -181,26 +258,6 @@ output_character: 			;Outputs Character From r0 into PuTTy (Changes r1,r2)
     strb r0, [r1]		 	;print string
     LDMFD sp!, {lr}
     mov pc, lr
-
-gpio_init:
-	STMFD SP!,{lr, r1-r11}
-
-	mov r3, #0xE000
-    movt r3, #0x400F
-    mov r4, #0x20
-    strb r4, [r3, #CLOCK]
-    ; enable pin 4
-	; set these pin as input
-	mov r1, #0x5000
-    movt r1, #0x4002
-    mov r4, #0x10
-    strb r4, [r1, #DIGI]	; enable pin 4
-    strb r4, [r1, #PULL]	; pull-up
-    mov r4, #0x00
-    strb r4, [r1, #DIR]		; set it as input
-
-    LDMFD sp!, {lr, r1-r11}
-	MOV pc, lr
 
 read_from_push_btn:
 	STMFD SP!,{lr, r1-r11}	; Store register lr on stack

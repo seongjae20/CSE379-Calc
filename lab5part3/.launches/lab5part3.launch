@@ -4,13 +4,13 @@
 <mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser@#$Stellaris In-Circuit Debug Interface/CORTEX_M4_0@#$0" value="32-Bit Hex - TI Style"/>
 </mapAttribute>
 <mapAttribute key="ccs.memoryview.pageexpr">
-<mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser@#$Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="@@0x40030000"/>
+<mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser@#$Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="@@0x40025000"/>
 </mapAttribute>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_DEBUGGER_PROPERTIES.Tiva TM4C123GH6PM.ccxml.Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot; ?&gt;&#10;&lt;PropertyValues&gt;&#10;&#10;  &lt;property id=&quot;ConnectOnStartup&quot;&gt;&#10;    &lt;curValue&gt;1&lt;/curValue&gt;&#10;  &lt;/property&gt;&#10;&#10;  &lt;property id=&quot;EnableInstalledBreakpoint&quot;&gt;&#10;    &lt;curValue&gt;1&lt;/curValue&gt;&#10;  &lt;/property&gt;&#10;&#10;  &lt;property id=&quot;IgnoreSoftLaunchFailures&quot;&gt;&#10;    &lt;curValue&gt;0&lt;/curValue&gt;&#10;  &lt;/property&gt;&#10;&#10;&lt;/PropertyValues&gt;&#10;"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROGRAM.Tiva TM4C123GH6PM.ccxml.Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="${build_artifact:lab5part3}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.Tiva TM4C123GH6PM.ccxml.Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="lab5part3"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:lab5part3}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Tiva TM4C123GH6PM.ccxml.Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="D:\workspace_v10\lab5part3\Debug\lab5part3.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Tiva TM4C123GH6PM.ccxml.Stellaris In-Circuit Debug Interface/CORTEX_M4_0" value="C:\Users\tjdwo\git\repository\lab5part3\Debug\lab5part3.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/lab5part3"/>
 </listAttribute>
