@@ -154,7 +154,9 @@ interrupt_init:
 
 	; Configure Interval
 	ldr r2, [r5, #GPTMTAILR]
-	ORR r2, r2, #0xFFFFFFFF
+	MOV r3, #0x2400
+	MOVT r3, #0xF4
+	ORR r2, r2, r3
 	str r2, [r5, #GPTMTAILR]
 
 

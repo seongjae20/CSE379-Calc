@@ -1,4 +1,4 @@
-	.data
+.data
 	 .global UART0_Handler
  	.global Switch_Handler
  	.global interrupt_init
@@ -18,6 +18,7 @@ GPIOIS: .equ 0x404
 GPIOIBE: .equ 0x408
 GPIOIV: .equ 0x40C
 GPIOIM: .equ 0x410
+GPIOICR: .equ 0x41C
 ptr_to_check:	.word check
 
 lab5:
@@ -25,14 +26,13 @@ lab5:
 
  	; Your code is placed here
 
+	mov r12, #0
+
 	bl gpio_init
 
  	bl interrupt_init
 
 loop:
-	ldr r1, ptr_to_check
-	ldrb r0, [r1]
-	CMP r0, #0x71
 	BNE loop
 
  	LDMFD sp!, {r0-r12,lr}
@@ -64,9 +64,28 @@ interrupt_init:
 	strb r5, [r4, #GPIOIV]
 	strb r5, [r4, #GPIOIM]
 
-	mov r0, #0
-
  	LDMFD sp!, {r0-r12,lr}
+	MOV pc, lr
+
+gpio_init:
+	STMFD SP!,{lr, r1-r11}
+
+	mov r3, #0xE000
+    movt r3, #0x400F
+    mov r4, #0x20
+    strb r4, [r3, #CLOCK]
+    ; enable pin 4
+	; set these pin as input
+	mov r1, #0x5000
+    movt r1, #0x4002
+    mov r4, #0x1E
+    strb r4, [r1, #DIGI]	; enable pin 4
+    mov r4, #0x10
+    strb r4, [r1, #PULL]	; pull-up
+    mov r4, #0x0E
+    strb r4, [r1, #DIR]		; set it as input
+
+    LDMFD sp!, {lr, r1-r11}
 	MOV pc, lr
 
 UART0_Handler:
@@ -80,9 +99,6 @@ UART0_Handler:
 	bl read_character
 	bl output_character
 
-	ldr r3, ptr_to_check
-	strb r0, [r3]
-
 	mov r2, #0x10
 	strb r2, [r1, #UARTICR]
 
@@ -93,52 +109,38 @@ Switch_Handler:
 	STMFD SP!,{r0-r12,lr} ; Store register lr on stack
 
  	; Your code is placed here
- 	mov r1, #0xC000
-	movt r1, #0x4000
+ 	mov r1, #0x5000
+	movt r1, #0x4002
 
 	bl read_from_push_btn
 
 	mov r2, #0x10
-	strb r2, [r1, #UARTICR]
+	strb r2, [r1, #GPIOICR]
 
  	LDMFD sp!, {r0-r12,lr}
-	MOV pc, lr
+	BX lr
 
 read_character:  			;Stores Character From PuTTy into r0 (Changes r0)
-	STMFD SP!,{lr}			; Store registers on stack
-	mov r1, #0xC000
-	movt r1, #0x4000
+	STMFD SP!,{lr, r1-r11}			; Store registers on stack
+read_character_loop:
+	ldrb r2, [r1, #U0FR]	;sets flag register
+	AND r2, r2, #0x10		;strips flag bit
+	CMP r2, #0				;cmp
+	BNE read_character_loop
 	ldrb r0, [r1]			;store PuTTy into r0
-	LDMFD sp!, {lr}
+	LDMFD sp!, {lr, r1-r11}
     mov pc, lr
 
 output_character: 			;Outputs Character From r0 into PuTTy (Changes r1,r2)
-    STMFD SP!,{lr}
-    mov r1, #0xC000
-	movt r1, #0x4000
+    STMFD SP!,{lr, r4-r11}
+Loop_TxFF:
+    ldrb r2, [r1, #U0FR] 	;sets flag register
+    AND r2,r2, #0x20	 	;strips flag bit
+    CMP r2,#0			 	;cmp
+    BNE Loop_TxFF
     strb r0, [r1]		 	;print string
-    LDMFD sp!, {lr}
+    LDMFD sp!, {lr, r4-r11}
     mov pc, lr
-
-gpio_init:
-	STMFD SP!,{lr, r1-r11}
-
-	mov r3, #0xE000
-    movt r3, #0x400F
-    mov r4, #0x20
-    strb r4, [r3, #CLOCK]
-    ; enable pin 4
-	; set these pin as input
-	mov r1, #0x5000
-    movt r1, #0x4002
-    mov r4, #0x10
-    strb r4, [r1, #DIGI]	; enable pin 4
-    strb r4, [r1, #PULL]	; pull-up
-    mov r4, #0x00
-    strb r4, [r1, #DIR]		; set it as input
-
-    LDMFD sp!, {lr, r1-r11}
-	MOV pc, lr
 
 read_from_push_btn:
 	STMFD SP!,{lr, r1-r11}	; Store register lr on stack
@@ -153,11 +155,11 @@ read_from_push_btn:
 	MOV pc, lr
 
 pushed:
-	CMP r0, #0	; Light blue
+	CMP r12, #0	; Light blue
     BEQ blue
-    CMP r0, #1	; Light green
+    CMP r12, #1	; Light green
     BEQ green
-    CMP r0, #2	; Light red
+    CMP r12, #2	; Light red
     BEQ red
 
 	LDMFD sp!, {lr, r1-r11}
@@ -166,19 +168,19 @@ pushed:
 blue:
 	mov r2, #0x04
     strb r2, [r1, #DATA]
-    mov r0, #1
+    mov r12, #1
     LDMFD sp!, {lr, r1-r11}
 	MOV pc, lr
 green:
 	mov r2, #0x08
     strb r2, [r1, #DATA]
-    mov r0, #2
+    mov r12, #2
     LDMFD sp!, {lr, r1-r11}
 	MOV pc, lr
 red:
 	mov r2, #0x02
     strb r2, [r1, #DATA]
-    mov r0, #0
+    mov r12, #0
     LDMFD sp!, {lr, r1-r11}
 	MOV pc, lr
 
