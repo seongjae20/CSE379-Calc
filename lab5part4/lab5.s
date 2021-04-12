@@ -1,4 +1,4 @@
-	.data
+.data
 	.global lab5library
 	.global UART0_Handler
 	.global Switch_Handler
